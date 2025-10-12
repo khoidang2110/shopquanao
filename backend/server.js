@@ -205,7 +205,10 @@ app.post('/api/upload', upload.single('image'), async (req, res) => {
       { 'Content-Type': req.file.mimetype }
     );
 
-    const imageUrl = `http://localhost:9000/shopquanao/${fileName}`;
+  // Build image URL exposed to clients. Use MINIO_PUBLIC_URL when provided (e.g. http://your-domain:9000),
+  // otherwise fall back to internal MinIO endpoint used inside Docker network.
+  const minioPublic = process.env.MINIO_PUBLIC_URL || `http://${process.env.MINIO_ENDPOINT}:${process.env.MINIO_PORT || 9000}`;
+  const imageUrl = `${minioPublic}/${process.env.MINIO_BUCKET || 'shopquanao'}/${fileName}`;
     console.log(`📤 [UPLOAD] File uploaded to MinIO: ${fileName}`);
     res.json({ imageUrl });
   } catch (error) {
@@ -360,7 +363,8 @@ app.post('/api/upload/from-base64', async (req, res) => {
       { 'Content-Type': mimetype || 'application/octet-stream' }
     );
 
-    const imageUrl = `http://localhost:9000/shopquanao/${fileName}`;
+  const minioPublic = process.env.MINIO_PUBLIC_URL || `http://${process.env.MINIO_ENDPOINT}:${process.env.MINIO_PORT || 9000}`;
+  const imageUrl = `${minioPublic}/${process.env.MINIO_BUCKET || 'shopquanao'}/${fileName}`;
     console.log(`📤 [MINIO] Base64 uploaded: ${fileName}, Size: ${buffer.length} bytes`);
     
     res.json({ 
