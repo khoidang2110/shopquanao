@@ -1,4 +1,5 @@
 const { Pool } = require('pg');
+const { Pool } = require('pg');
 
 const pool = new Pool({
   host: process.env.DB_HOST,
@@ -8,9 +9,34 @@ const pool = new Pool({
   password: process.env.DB_PASSWORD,
 });
 
+// Small helper to wait
+const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// Retry until Postgres is ready. Default: 15 attempts, 2s interval => ~30s max wait
+const waitForPostgres = async (attempts = 15, intervalMs = 2000) => {
+  let lastErr = null;
+  for (let i = 1; i <= attempts; i++) {
+    try {
+      // simple query to check connection
+      await pool.query('SELECT 1');
+      console.log('\u2705 Connected to Postgres');
+      return;
+    } catch (err) {
+      lastErr = err;
+      console.log(`\u23f3 Waiting for Postgres (attempt ${i}/${attempts}) - ${err.code || err.message}`);
+      await wait(intervalMs);
+    }
+  }
+  // if we get here, all attempts failed
+  throw lastErr || new Error('Unable to connect to Postgres');
+};
+
 // Tạo bảng khi khởi động
 const initDB = async () => {
   try {
+    // Đợi Postgres sẵn sàng trước khi thực hiện DDL
+    await waitForPostgres();
+
     // Tạo bảng categories
     await pool.query(`
       CREATE TABLE IF NOT EXISTS categories (
@@ -64,11 +90,11 @@ const initDB = async () => {
     // Thêm dữ liệu mẫu categories
     await pool.query(`
       INSERT INTO categories (id, name) VALUES 
-      ('ao-nam', 'Áo Nam'),
-      ('ao-nu', 'Áo Nữ'),
-      ('quan-nam', 'Quần Nam'),
-      ('quan-nu', 'Quần Nữ'),
-      ('vay-dam', 'Váy & Đầm')
+      ('ao-nam', '\u00c1o Nam'),
+      ('ao-nu', '\u00c1o N\u1eef'),
+      ('quan-nam', 'Qu\u1ea7n Nam'),
+      ('quan-nu', 'Qu\u1ea7n N\u1eef'),
+      ('vay-dam', 'V\u00e1y & \u0110\u1ea7m')
       ON CONFLICT (id) DO NOTHING
     `);
 
@@ -77,18 +103,18 @@ const initDB = async () => {
     if (parseInt(productCount.rows[0].count) === 0) {
       await pool.query(`
         INSERT INTO products (name, price, image, category, description) VALUES 
-        ('Áo thun nam basic', 299000, 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=300&h=400&fit=crop', 'ao-nam', 'Áo thun nam chất liệu cotton 100%'),
-        ('Quần jean nữ skinny', 599000, 'https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=300&h=400&fit=crop', 'quan-nu', 'Quần jean nữ form skinny thời trang'),
-        ('Váy midi hoa', 450000, 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=300&h=400&fit=crop', 'vay-dam', 'Váy midi họa tiết hoa xinh xắn'),
-        ('Áo sơ mi trắng', 399000, 'https://images.unsplash.com/photo-1586790170083-2f9ceadc732d?w=300&h=400&fit=crop', 'ao-nu', 'Áo sơ mi trắng công sở thanh lịch')
+        ('\u00c1o thun nam basic', 299000, 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=300&h=400&fit=crop', 'ao-nam', '\u00c1o thun nam ch\u1ea5t li\u1ec7u cotton 100%'),
+        ('Qu\u1ea7n jean n\u1eef skinny', 599000, 'https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=300&h=400&fit=crop', 'quan-nu', 'Qu\u1ea7n jean n\u1eef form skinny th\u1eddi trang'),
+        ('V\u00e1y midi hoa', 450000, 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=300&h=400&fit=crop', 'vay-dam', 'V\u00e1y midi h\u1ecda ti\u1ebft hoa xinh x\u1eafn'),
+        ('\u00c1o s\u01a1 mi tr\u1eafng', 399000, 'https://images.unsplash.com/photo-1586790170083-2f9ceadc732d?w=300&h=400&fit=crop', 'ao-nu', '\u00c1o s\u01a1 mi tr\u1eafng c\u00f4ng s\u1edf thanh l\u1ecb')
       `);
-      console.log('✅ Sample products added with new images');
+      console.log('\u2705 Sample products added with new images');
     }
 
-    console.log('✅ Database initialized successfully');
+    console.log('\u2705 Database initialized successfully');
   } catch (error) {
-    console.error('❌ Database initialization error:', error);
+    console.error('\u274c Database initialization error:', error);
   }
 };
 
-module.exports = { pool, initDB };
+module.exports = { pool, initDB, waitForPostgres };
