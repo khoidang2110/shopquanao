@@ -24,8 +24,9 @@ const AddProduct = ({ categories, onProductAdded, onClose, editProduct = null })
     setLoading(true)
     try {
       const url = editProduct 
-        ? `http://localhost:3001/api/products/${editProduct.id}`
-        : 'http://localhost:3001/api/products'
+  const API_BASE = import.meta.env.VITE_API_URL
+  ? `${API_BASE}/api/products/${editProduct.id}`
+  : `${API_BASE}/api/products`
       const method = editProduct ? 'put' : 'post'
       
       const response = await axios[method](url, {

@@ -8,7 +8,8 @@ const NewsDetail = ({ articleId, onClose }) => {
   useEffect(() => {
     const fetchArticle = async () => {
       try {
-        const response = await axios.get(`http://localhost:3001/api/news/${articleId}`)
+  const API = import.meta.env.VITE_API_URL
+  const response = await axios.get(`${API}/api/news/${articleId}`)
         setArticle(response.data)
       } catch (error) {
         console.error('Error fetching article:', error)

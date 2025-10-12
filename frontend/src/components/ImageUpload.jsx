@@ -25,7 +25,8 @@ const ImageUpload = ({ onImageUploaded }) => {
           console.log('📦 File converted to base64, checksum:', checksum)
 
           // Upload base64 lên server
-          const response = await axios.post('http://localhost:3001/api/upload/from-base64', {
+          const API = import.meta.env.VITE_API_URL
+          const response = await axios.post(`${API}/api/upload/from-base64`, {
             base64,
             checksum,
             filename: file.name,

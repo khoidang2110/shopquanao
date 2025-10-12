@@ -12,7 +12,8 @@ const News = ({ onClose }) => {
   const fetchNews = async (currentPage = 1) => {
     setLoading(true)
     try {
-      const response = await axios.get(`http://localhost:3001/api/news?page=${currentPage}&limit=5`)
+  const API = import.meta.env.VITE_API_URL
+  const response = await axios.get(`${API}/api/news?page=${currentPage}&limit=5`)
       setArticles(response.data.articles)
       setTotalPages(response.data.totalPages || 1)
     } catch (error) {

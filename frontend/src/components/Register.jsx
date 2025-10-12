@@ -18,7 +18,8 @@ const Register = ({ onClose }) => {
     setError('')
     
     try {
-      await axios.post('http://localhost:3001/api/register', formData)
+  const API = import.meta.env.VITE_API_URL
+  await axios.post(`${API}/api/register`, formData)
       alert('Đăng ký thành công!')
       onClose()
     } catch (err) {

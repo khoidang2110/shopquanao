@@ -26,7 +26,8 @@ const Checkout = ({ cart, total, onClose, onOrderSuccess }) => {
         orderDate: new Date().toISOString()
       }
 
-      const response = await axios.post('http://localhost:3001/api/orders', orderData)
+  const API = import.meta.env.VITE_API_URL
+  const response = await axios.post(`${API}/api/orders`, orderData)
       onOrderSuccess(response.data)
       onClose()
     } catch (error) {
