@@ -78,7 +78,7 @@ services:
       - MINIO_BUCKET=shopquanao
       - REDIS_URL=redis://redis:6379
       - JWT_SECRET=dev_jwt_secret
-      - FRONTEND_URLS=http://localhost:5173
+      - FRONTEND_URLS="http://andynguyen03006.ddns.net:5173"
     volumes:
       - ./backend:/app
       - /app/node_modules
@@ -100,7 +100,7 @@ services:
       # When the client (browser) runs on host and frontend dev server runs in a container,
       # use host.docker.internal so the container can reach backend published on the host.
       # On macOS host.docker.internal resolves to the host.
-      - VITE_API_URL=http://host.docker.internal:3001
+      - VITE_API_URL="http://andynguyen03006.ddns.net:3001"
     volumes:
       - ./frontend:/app
       - /app/node_modules
