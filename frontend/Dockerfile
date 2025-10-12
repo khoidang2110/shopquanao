@@ -6,7 +6,8 @@ COPY package*.json ./
 RUN npm install
 
 COPY . .
+RUN chmod +x /app/entrypoint.sh || true
 
 EXPOSE 5173
 
-CMD ["npm", "run", "dev", "--", "--host"]
+CMD ["/bin/sh", "/app/entrypoint.sh"]
