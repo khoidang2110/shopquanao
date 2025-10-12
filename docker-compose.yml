@@ -1,0 +1,107 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:16.4
+    container_name: postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=shopquanao
+      - POSTGRES_USER=shopuser
+      - POSTGRES_PASSWORD=shoppass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - shopquanao-net
+
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    restart: unless-stopped
+    environment:
+      # MinIO root credentials (used by the image)
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin123
+      # Duplicate envs expected by the backend code
+      - MINIO_ACCESS_KEY=minioadmin
+      - MINIO_SECRET_KEY=minioadmin123
+      - MINIO_BUCKET=shopquanao
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+    ports:
+      - "9000:9000" # S3 API
+      - "9001:9001" # Console
+    networks:
+      - shopquanao-net
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    networks:
+      - shopquanao-net
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: backend
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - redis
+      - minio
+    environment:
+      - PORT=3001
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=shopquanao
+      - DB_USER=shopuser
+      - DB_PASSWORD=shoppass
+      - MINIO_ENDPOINT=minio
+      - MINIO_PORT=9000
+      - MINIO_ACCESS_KEY=minioadmin
+      - MINIO_SECRET_KEY=minioadmin123
+      - MINIO_BUCKET=shopquanao
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=dev_jwt_secret
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    ports:
+      - "3001:3001"
+    networks:
+      - shopquanao-net
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      # In dev the frontend can call backend by service name inside the docker network
+      - VITE_API_URL=http://backend:3001
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    networks:
+      - shopquanao-net
+
+volumes:
+  postgres_data:
+  minio_data:
+
+networks:
+  shopquanao-net:
+    name: shopquanao-net
+    driver: bridge
