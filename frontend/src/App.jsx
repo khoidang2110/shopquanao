@@ -50,8 +50,12 @@ function App() {
 
   const fetchCategories = async () => {
     const response = await axios.get(`${API_URL}/categories`);
+    console.log('[FETCH-CATEGORIES] response status:', response.status);
+    console.log('[FETCH-CATEGORIES] response.data:', response.data);
     // Ensure categories is always an array
-    setCategories(Array.isArray(response.data) ? response.data : []);
+    const arr = Array.isArray(response.data) ? response.data : [];
+    setCategories(arr);
+    console.log('[STATE] categories set to:', arr);
   };
 
   const reloadProducts = async () => {

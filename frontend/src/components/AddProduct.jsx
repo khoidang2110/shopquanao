@@ -3,6 +3,7 @@ import axios from 'axios'
 import ImageUpload from './ImageUpload'
 
 const AddProduct = ({ categories, onProductAdded, onClose, editProduct = null }) => {
+  console.log('[AddProduct] received categories prop:', categories);
   const [product, setProduct] = useState(
     editProduct || {
       name: '',
