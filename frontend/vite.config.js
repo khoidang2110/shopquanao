@@ -12,5 +12,15 @@ export default defineConfig({
       '127.0.0.1',
       'andynguyen03006.ddns.net'
     ]
+    ,
+    proxy: {
+      // proxy /api requests to backend service inside docker network
+      '/api': {
+        target: 'http://backend:3001',
+        changeOrigin: true,
+        secure: false,
+        rewrite: (path) => path.replace(/^\/api/, '/api')
+      }
+    }
   }
 })
