@@ -49,7 +49,8 @@ function App() {
 
   const fetchCategories = async () => {
     const response = await axios.get(`${API_URL}/categories`);
-    setCategories(response.data);
+    // Ensure categories is always an array
+    setCategories(Array.isArray(response.data) ? response.data : []);
   };
 
   const reloadProducts = async () => {
@@ -175,7 +176,7 @@ function App() {
         >
           Tất cả
         </button>
-        {categories.map((category) => (
+        {Array.isArray(categories) && categories.map((category) => (
           <button
             key={category.id}
             className={selectedCategory === category.id ? "active" : ""}

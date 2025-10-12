@@ -23,12 +23,12 @@ const AddProduct = ({ categories, onProductAdded, onClose, editProduct = null })
 
     setLoading(true)
     try {
-      const url = editProduct 
-  const API_BASE = import.meta.env.VITE_API_URL
-  ? `${API_BASE}/api/products/${editProduct.id}`
-  : `${API_BASE}/api/products`
+      const API_BASE = import.meta.env.VITE_API_URL
+      const url = editProduct
+        ? `${API_BASE}/api/products/${editProduct.id}`
+        : `${API_BASE}/api/products`
       const method = editProduct ? 'put' : 'post'
-      
+
       const response = await axios[method](url, {
         ...product,
         price: parseInt(product.price)
@@ -65,7 +65,7 @@ const AddProduct = ({ categories, onProductAdded, onClose, editProduct = null })
             onChange={(e) => setProduct({...product, category: e.target.value})}
           >
             <option value="">Chọn danh mục</option>
-            {categories.map(cat => (
+            {Array.isArray(categories) && categories.map(cat => (
               <option key={cat.id} value={cat.id}>{cat.name}</option>
             ))}
           </select>
