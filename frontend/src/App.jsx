@@ -44,7 +44,8 @@ function App() {
     console.log("Fetching products from:", `${API_URL}/products`);
     const response = await axios.get(`${API_URL}/products`);
     console.log("Products response:", response.data);
-    setProducts(response.data);
+    // Ensure products is always an array
+    setProducts(Array.isArray(response.data) ? response.data : []);
   };
 
   const fetchCategories = async () => {
@@ -201,6 +202,7 @@ function App() {
           <div className="no-products">Không có sản phẩm nào</div>
         )}
         {!loading &&
+          Array.isArray(filteredProducts) &&
           filteredProducts.map((product) => (
             <div key={product.id} className="product-card">
               <img src={product.image} alt={product.name} />
