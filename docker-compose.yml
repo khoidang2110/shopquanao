@@ -15,6 +15,11 @@ services:
       - "5432:5432"
     networks:
       - shopquanao-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB} -h localhost -p $${POSTGRES_PORT:-5432}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
 
   minio:
     image: minio/minio:latest
@@ -53,9 +58,12 @@ services:
     container_name: backend
     restart: unless-stopped
     depends_on:
-      - postgres
-      - redis
-      - minio
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      minio:
+        condition: service_started
     environment:
       - PORT=3001
       - DB_HOST=postgres
